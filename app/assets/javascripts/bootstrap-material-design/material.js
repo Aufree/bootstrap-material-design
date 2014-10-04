@@ -1,18 +1,18 @@
 /* globals ripples */
- 
+
 $(function (){
- 
-    if (ripples) {
-        ripples.init(".btn:not(.btn-link), .navbar a, .nav-tabs a, .withripple");
+
+    if (typeof ripples == "object") {
+        ripples.init(".btn:not(.btn-link), .navbar a:not(.withoutripple), .nav-tabs a:not(.withoutripple), .withripple");
     }
- 
+
     var initInputs = function() {
         // Add fake-checkbox to material checkboxes
         $(".checkbox > label > input").not(".bs-material").addClass("bs-material").after("<span class=check></span>");
- 
+
         // Add fake-radio to material radios
         $(".radio > label > input").not(".bs-material").addClass("bs-material").after("<span class=circle></span><span class=check></span>");
- 
+
         // Add elements for material inputs
         $("input.form-control, textarea.form-control, select.form-control").not(".bs-material").each( function() {
             if ($(this).is(".bs-material")) { return; }
@@ -26,17 +26,17 @@ $(function (){
             if ($(this).is(":empty") || $(this).val() === null || $(this).val() == "undefined" || $(this).val() === "") {
                 $(this).addClass("empty");
             }
- 
+
             if ($(this).parent().next().is("[type=file]")) {
                 $(this).parent().addClass("fileinput");
                 var $input = $(this).parent().next().detach();
                 $(this).after($input);
             }
         });
- 
+
     };
     initInputs();
- 
+
     // Support for "arrive.js" to dynamically detect creation of elements
     // include it before this script to take advantage of this feature
     // https://github.com/uzairfarooq/arrive/
@@ -45,11 +45,11 @@ $(function (){
             initInputs();
         });
     }
- 
+
     $(document).on("change", ".checkbox input", function() {
         $(this).blur();
     });
- 
+
     $(document).on("keyup change", ".form-control", function() {
         var self = $(this);
         setTimeout(function() {
