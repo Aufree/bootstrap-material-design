@@ -1,4 +1,4 @@
-//= require ./jquery.nouislider.min
+//= require ./jquery.nouislider
 //= require ./material
 //= require ./ripples
-//= require ./snackbar.min
+//= require ./snackbar
