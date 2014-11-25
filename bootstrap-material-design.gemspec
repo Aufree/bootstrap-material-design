@@ -4,8 +4,8 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |s|
   s.name        = 'bootstrap-material-design'
-  s.version     =  '0.1.2'
-  s.date        = '2014-11-18'
+  s.version     =  '0.1.3'
+  s.date        = '2014-11-25'
   s.summary     = "Material Design for Bootstrap"
   s.authors     = ["Paul King"]
   s.email       = 'freedomlijinfa@gmail.com'
