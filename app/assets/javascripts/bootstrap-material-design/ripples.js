@@ -43,7 +43,7 @@ window.ripples = {
                     o = o.substring(0, p) + n + ")"
                 } else o = o.replace("rgb", "rgba").replace(")", ", " + n + ")");
                 f.appendChild(h), e = window.getComputedStyle(h).opacity, h.dataset.animating = 1, h.className = "ripple ripple-on";
-                var q = [h.getAttribute("style"), "background-color: " + o, "-ms-transform: " + l, "-moz-transform" + l, "-webkit-transform" + l, "transform: " + l];
+                var q = [h.getAttribute("style"), "background-color: " + o, "-ms-transform: " + l, "-moz-transform: " + l, "-webkit-transform: " + l, "transform: " + l];
                 h.setAttribute("style", q.join(";")), setTimeout(function() {
                     h.dataset.animating = 0, document.dispatchEvent(m), c && c()
                 }, d)
