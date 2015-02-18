@@ -1,80 +1,226 @@
-! function(a) {
-    function b(a) {
-        return "undefined" == typeof a.which ? !0 : "number" == typeof a.which && a.which > 0 ? !a.ctrlKey && !a.metaKey && !a.altKey && 8 != a.which : !1
+/* globals jQuery */
+
+(function($) {
+  // Selector to select only not already processed elements
+  $.expr[":"].notmdproc = function(obj){
+    if ($(obj).data("mdproc")) {
+      return false;
+    } else {
+      return true;
     }
-    a.expr[":"].notmdproc = function(b) {
-        return a(b).data("mdproc") ? !1 : !0
-    }, a.material = {
-        options: {
-            withRipples: [".btn:not(.btn-link)", ".card-image", ".navbar a:not(.withoutripple)", ".dropdown-menu a", ".nav-tabs a:not(.withoutripple)", ".withripple"].join(","),
-            inputElements: "input.form-control, textarea.form-control, select.form-control",
-            checkboxElements: ".checkbox > label > input[type=checkbox]",
-            radioElements: ".radio > label > input[type=radio]"
-        },
-        checkbox: function(b) {
-            a(b ? b : this.options.checkboxElements).filter(":notmdproc").data("mdproc", !0).after("<span class=ripple></span><span class=check></span>")
-        },
-        radio: function(b) {
-            a(b ? b : this.options.radioElements).filter(":notmdproc").data("mdproc", !0).after("<span class=circle></span><span class=check></span>")
-        },
-        input: function(c) {
-            a(c ? c : this.options.inputElements).filter(":notmdproc").data("mdproc", !0).each(function() {
-                var b = a(this);
-                if (b.wrap("<div class=form-control-wrapper></div>"), b.after("<span class=material-input></span>"), b.hasClass("floating-label")) {
-                    var c = b.attr("placeholder");
-                    b.attr("placeholder", null).removeClass("floating-label"), b.after("<div class=floating-label>" + c + "</div>")
-                }
-                if (b.attr("data-hint") && b.after("<div class=hint>" + b.attr("data-hint") + "</div>"), (null === b.val() || "undefined" == b.val() || "" === b.val()) && b.addClass("empty"), b.parent().next().is("[type=file]")) {
-                    b.parent().addClass("fileinput");
-                    var d = b.parent().next().detach();
-                    b.after(d)
-                }
-            }), a(document).on("change", ".checkbox input[type=checkbox]", function() {
-                a(this).blur()
-            }).on("keydown paste", ".form-control", function(c) {
-                b(c) && a(this).removeClass("empty")
-            }).on("keyup change", ".form-control", function() {
-                var b = a(this);
-                "" === b.val() ? b.addClass("empty") : b.removeClass("empty")
-            }).on("focus", ".form-control-wrapper.fileinput", function() {
-                a(this).find("input").addClass("focus")
-            }).on("blur", ".form-control-wrapper.fileinput", function() {
-                a(this).find("input").removeClass("focus")
-            }).on("change", ".form-control-wrapper.fileinput [type=file]", function() {
-                var b = "";
-                a.each(a(this)[0].files, function(a, c) {
-                    console.log(c), b += c.name + ", "
-                }), b = b.substring(0, b.length - 2), b ? a(this).prev().removeClass("empty") : a(this).prev().addClass("empty"), a(this).prev().val(b)
-            })
-        },
-        ripples: function(a) {
-            ripples.init(a ? a : this.options.withRipples)
-        },
-        init: function() {
-            this.ripples(), this.input(), this.checkbox(), this.radio(), document.arrive && document.arrive("input, textarea, select", function() {
-                    a.material.init()
-                }),
-                function() {
-                    var b = setInterval(function() {
-                        a("input[type!=checkbox]").each(function() {
-                            a(this).val() && a(this).val() !== a(this).attr("value") && a(this).trigger("change")
-                        })
-                    }, 100);
-                    setTimeout(function() {
-                        clearInterval(b)
-                    }, 1e4);
-                    var c;
-                    a(document).on("focus", "input", function() {
-                        var b = a(this).parents("form").find("input");
-                        c = setInterval(function() {
-                            b.each(function() {
-                                a(this).val() !== a(this).attr("value") && a(this).trigger("change")
-                            })
-                        }, 100)
-                    }).on("blur", "input", function() {
-                        clearInterval(c)
-                    })
-                }()
+  };
+
+  function _isChar(evt) {
+    if (typeof evt.which == "undefined") {
+      return true;
+    } else if (typeof evt.which == "number" && evt.which > 0) {
+      return !evt.ctrlKey && !evt.metaKey && !evt.altKey && evt.which != 8 && evt.which != 9;
+    }
+    return false;
+  }
+
+  $.material =  {
+    "options": {
+      // These options set what will be started by $.material.init()
+      "input": true,
+      "ripples": true,
+      "checkbox": true,
+      "togglebutton": true,
+      "radio": true,
+      "arrive": true,
+      "autofill": false,
+
+      "withRipples": [
+        ".btn:not(.btn-link)",
+        ".card-image",
+        ".navbar a:not(.withoutripple)",
+        ".dropdown-menu a",
+        ".nav-tabs a:not(.withoutripple)",
+        ".withripple"
+      ].join(","),
+      "inputElements": "input.form-control, textarea.form-control, select.form-control",
+      "checkboxElements": ".checkbox > label > input[type=checkbox]",
+      "togglebuttonElements": ".togglebutton > label > input[type=checkbox]",
+      "radioElements": ".radio > label > input[type=radio]"
+    },
+    "checkbox": function(selector) {
+      // Add fake-checkbox to material checkboxes
+      $((selector) ? selector : this.options.checkboxElements)
+      .filter(":notmdproc")
+      .data("mdproc", true)
+      .after("<span class=ripple></span><span class=check></span>");
+    },
+    "togglebutton": function(selector) {
+      // Add fake-checkbox to material checkboxes
+      $((selector) ? selector : this.options.togglebuttonElements)
+      .filter(":notmdproc")
+      .data("mdproc", true)
+      .after("<span class=toggle></span>");
+    },
+    "radio": function(selector) {
+      // Add fake-radio to material radios
+      $((selector) ? selector : this.options.radioElements)
+      .filter(":notmdproc")
+      .data("mdproc", true)
+      .after("<span class=circle></span><span class=check></span>");
+    },
+    "input": function(selector) {
+      $((selector) ? selector : this.options.inputElements)
+      .filter(":notmdproc")
+      .data("mdproc", true)
+      .each( function() {
+        var $this = $(this);
+
+        if (!$(this).attr("data-hint") && !$this.hasClass("floating-label")) {
+          return;
         }
+        $this.wrap("<div class=form-control-wrapper></div>");
+        $this.after("<span class=material-input></span>");
+
+        // Add floating label if required
+        if ($this.hasClass("floating-label")) {
+          var placeholder = $this.attr("placeholder");
+          $this.attr("placeholder", null).removeClass("floating-label");
+          $this.after("<div class=floating-label>" + placeholder + "</div>");
+        }
+
+        // Add hint label if required
+        if ($this.attr("data-hint")) {
+          $this.after("<div class=hint>" + $this.attr("data-hint") + "</div>");
+        }
+
+        // Set as empty if is empty (damn I must improve this...)
+        if ($this.val() === null || $this.val() == "undefined" || $this.val() === "") {
+          $this.addClass("empty");
+        }
+
+        // Support for file input
+        if ($this.parent().next().is("[type=file]")) {
+          $this.parent().addClass("fileinput");
+          var $input = $this.parent().next().detach();
+          $this.after($input);
+        }
+      });
+
+      $(document)
+      .on("change", ".checkbox input[type=checkbox]", function() { $(this).blur(); })
+      .on("keydown paste", ".form-control", function(e) {
+        if(_isChar(e)) {
+          $(this).removeClass("empty");
+        }
+      })
+      .on("keyup change", ".form-control", function() {
+        var $this = $(this);
+        if($this.val() === "" && $this[0].checkValidity()) {
+          $this.addClass("empty");
+        } else {
+          $this.removeClass("empty");
+        }
+      })
+      .on("focus", ".form-control-wrapper.fileinput", function() {
+        $(this).find("input").addClass("focus");
+      })
+      .on("blur", ".form-control-wrapper.fileinput", function() {
+        $(this).find("input").removeClass("focus");
+      })
+      .on("change", ".form-control-wrapper.fileinput [type=file]", function() {
+        var value = "";
+        $.each($(this)[0].files, function(i, file) {
+          value += file.name + ", ";
+        });
+        value = value.substring(0, value.length - 2);
+        if (value) {
+          $(this).prev().removeClass("empty");
+        } else {
+          $(this).prev().addClass("empty");
+        }
+        $(this).prev().val(value);
+      });
+    },
+    "ripples": function(selector) {
+      $((selector) ? selector : this.options.withRipples).ripples();
+    },
+    "autofill": function() {
+
+      // This part of code will detect autofill when the page is loading (username and password inputs for example)
+      var loading = setInterval(function() {
+        $("input[type!=checkbox]").each(function() {
+          if ($(this).val() && $(this).val() !== $(this).attr("value")) {
+            $(this).trigger("change");
+          }
+        });
+      }, 100);
+
+      // After 10 seconds we are quite sure all the needed inputs are autofilled then we can stop checking them
+      setTimeout(function() {
+        clearInterval(loading);
+      }, 10000);
+      // Now we just listen on inputs of the focused form (because user can select from the autofill dropdown only when the input has focus)
+      var focused;
+      $(document)
+      .on("focus", "input", function() {
+        var $inputs = $(this).parents("form").find("input").not("[type=file]");
+        focused = setInterval(function() {
+          $inputs.each(function() {
+            if ($(this).val() !== $(this).attr("value")) {
+              $(this).trigger("change");
+            }
+          });
+        }, 100);
+      })
+      .on("blur", "input", function() {
+        clearInterval(focused);
+      });
+    },
+    "init": function() {
+      if ($.fn.ripples && this.options.ripples) {
+        this.ripples();
+      }
+      if (this.options.input) {
+        this.input();
+      }
+      if (this.options.checkbox) {
+        this.checkbox();
+      }
+      if (this.options.togglebutton) {
+        this.togglebutton();
+      }
+      if (this.options.radio) {
+        this.radio();
+      }
+      if (this.options.autofill) {
+        this.autofill();
+      }
+
+      if (document.arrive && this.options.arrive) {
+        if ($.fn.ripples && this.options.ripples) {
+          $(document).arrive(this.options.withRipples, function() {
+            $.material.ripples($(this));
+          });
+        }
+        if (this.options.input) {
+          $(document).arrive(this.options.inputElements, function() {
+            $.material.input($(this));
+          });
+        }
+        if (this.options.checkbox) {
+          $(document).arrive(this.options.checkboxElements, function() {
+            $.material.checkbox($(this));
+          });
+        }
+        if (this.options.radio) {
+          $(document).arrive(this.options.radioElements, function() {
+            $.material.radio($(this));
+          });
+        }
+        if (this.options.togglebutton) {
+          $(document).arrive(this.options.togglebuttonElements, function() {
+            $.material.togglebutton($(this));
+          });
+        }
+
+      }
     }
-}(jQuery);
+  };
+
+})(jQuery);
