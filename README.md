@@ -44,7 +44,7 @@ Then restart your webserver if it was previously running.
 
 That's it, hava fun!
 
-Also you can see more details about bootstrap-material-design at [this link](https://github.com/FezVrasta/bootstrap-material-design).
+Also you can see more details about bootstrap-material-design at [this link](https://github.com/FezVrasta/bootstrap-material-design) or clone my gem in your computer, then run `cd bootstrap-material-design/test/dummy_app  && bundle && rails s`, that just give a demo for you.
 
 ## Thanks
 * [Bootstrap](http://getbootstrap.com/)
