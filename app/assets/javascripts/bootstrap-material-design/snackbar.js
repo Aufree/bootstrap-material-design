@@ -1,55 +1,153 @@
 /* SnackbarJS - MIT LICENSE (https://github.com/FezVrasta/snackbarjs/blob/master/LICENSE.md) */
-(function(c) {
-    function d(a) {
-        return "undefined" !== typeof a && null !== a ? !0 : !1
+
+(function (factory) {
+    if (typeof define === 'function' && define.amd) {
+        // AMD. Register as an anonymous module.
+        define(['jquery'], factory);
+    } else if (typeof exports === 'object') {
+        // Node/CommonJS
+        module.exports = factory(require('jquery'));
+    } else {
+        // Browser globals
+        factory(jQuery);
     }
-    c(document).ready(function() {
-        c("body").append("<div id=snackbar-container/>")
+}(function( $ ){
+
+    $(document).ready(function() {
+        $("body").append("<div id=snackbar-container/>");
     });
-    c(document).on("click", "[data-toggle=snackbar]", function() {
-        c(this).snackbar("toggle")
-    }).on("click", "#snackbar-container .snackbar", function() {
-        c(this).snackbar("hide")
+
+    function isset(variable) {
+        if (typeof variable !== "undefined" && variable !== null) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    $(document)
+    .on("click", "[data-toggle=snackbar]", function() {
+        $(this).snackbar("toggle");
+    })
+    .on("click", "#snackbar-container .snackbar", function() {
+        $(this).snackbar("hide");
     });
-    c.snackbar = function(a) {
-        if (d(a) && a === Object(a)) {
-            var b;
-            b = d(a.id) ? c("#" + a.id) : c("<div/>").attr("id", "snackbar" + Date.now()).attr("class", "snackbar");
-            var g = b.hasClass("snackbar-opened");
-            d(a.style) ? b.attr("class", "snackbar " + a.style) : b.attr("class", "snackbar");
-            a.timeout = d(a.timeout) ? a.timeout : 3E3;
-            d(a.content) && (b.find(".snackbar-content").length ? b.find(".snackbar-content").text(a.content) : b.prepend("<span class=snackbar-content>" + a.content + "</span>"));
-            d(a.id) ? b.insertAfter("#snackbar-container .snackbar:last-child") : b.appendTo("#snackbar-container");
-            d(a.action) && "toggle" == a.action && (a.action = g ? "hide" : "show");
-            var e = Date.now();
-            b.data("animationId1", e);
+
+    $.snackbar = function(options) {
+
+        if (isset(options) && options === Object(options)) {
+            var $snackbar;
+
+            if (!isset(options.id)) {
+                $snackbar = $("<div/>").attr("id", "snackbar" + Date.now()).attr("class", "snackbar");
+            } else {
+                $snackbar = $("#" + options.id);
+            }
+
+            var snackbarStatus = $snackbar.hasClass("snackbar-opened");
+
+            if (isset(options.style)) {
+                $snackbar.attr("class", "snackbar " + options.style);
+            } else {
+                $snackbar.attr("class", "snackbar");
+            }
+
+            options.htmlAllowed = isset(options.htmlAllowed) ? options.htmlAllowed : false;
+
+            options.timeout = (isset(options.timeout)) ? options.timeout : 3000;
+
+            options.content = (options.htmlAllowed) ? options.content : $("<p>" + options.content + "</p>").text();
+
+            if (isset(options.content)) {
+                if ($snackbar.find(".snackbar-content").length) {
+                    $snackbar.find(".snackbar-content").html(options.content);
+                } else {
+                    $snackbar.prepend("<span class=snackbar-content>" + options.content + "</span>");
+                }
+            }
+
+            if (!isset(options.id)) {
+                $snackbar.appendTo("#snackbar-container");
+            } else {
+                $snackbar.insertAfter("#snackbar-container .snackbar:last-child");
+            }
+
+            // Show or hide item
+            if (isset(options.action) && options.action == "toggle") {
+                if (snackbarStatus) {
+                    options.action = "hide";
+                } else {
+                    options.action = "show";
+                }
+            }
+
+            var animationId1 = Date.now();
+            $snackbar.data("animationId1", animationId1);
             setTimeout(function() {
-                b.data("animationId1") === e && (d(a.action) && "show" != a.action ? d(a.action) && "hide" == a.action && b.removeClass("snackbar-opened") : b.addClass("snackbar-opened"))
+                if ($snackbar.data("animationId1") === animationId1) {
+                    if (!isset(options.action) || options.action == "show") {
+                        $snackbar.addClass("snackbar-opened");
+                    } else if (isset(options.action) && options.action == "hide") {
+                        $snackbar.removeClass("snackbar-opened");
+                    }
+                }
             }, 50);
-            var f = Date.now();
-            b.data("animationId2", f);
-            0 !== a.timeout && setTimeout(function() {
-                b.data("animationId2") === f && b.removeClass("snackbar-opened")
-            }, a.timeout);
-            return b
+
+            // Set timer for item autohide
+            var animationId2 = Date.now();
+            $snackbar.data("animationId2", animationId2);
+
+            if (options.timeout !== 0) {
+                setTimeout(function() {
+                    if ($snackbar.data("animationId2") === animationId2) {
+                        $snackbar.removeClass("snackbar-opened");
+                    }
+                }, options.timeout);
+            }
+
+            return $snackbar;
+
+        } else {
+            return false;
         }
-        return !1
     };
-    c.fn.snackbar = function(a) {
-        var b = {};
-        if (this.hasClass("snackbar")) {
-            b.id = this.attr("id");
-            if ("show" === a || "hide" === a || "toggle" == a) b.action = a;
-            return c.snackbar(b)
+
+    $.fn.snackbar = function(action) {
+
+        var options = {};
+
+        if (!this.hasClass("snackbar")) {
+
+            if (!isset(action) || action === "show" || action === "hide" || action == "toggle") {
+                options = {
+                    content: $(this).attr("data-content"),
+                    style: $(this).attr("data-style"),
+                    timeout: $(this).attr("data-timeout"),
+                    htmlAllowed: $(this).attr("data-html-allowed")
+                };
+            }
+
+            if (isset(action)) {
+                options.id = this.attr("data-snackbar-id");
+
+                if(action === "show" || action === "hide" || action == "toggle") {
+                    options.action = action;
+                }
+            }
+
+            var $snackbar = $.snackbar(options);
+            this.attr("data-snackbar-id", $snackbar.attr("id"));
+
+            return $snackbar;
+
+        } else {
+
+            options.id = this.attr("id");
+            if(action === "show" || action === "hide" || action == "toggle") {
+                options.action = action;
+            }
+            return $.snackbar(options);
         }
-        d(a) && "show" !== a && "hide" !== a && "toggle" != a || (b = {
-            content: c(this).attr("data-content"),
-            style: c(this).attr("data-style"),
-            timeout: c(this).attr("data-timeout")
-        });
-        d(a) && (b.id = this.attr("data-snackbar-id"), "show" === a || "hide" === a || "toggle" == a) && (b.action = a);
-        a = c.snackbar(b);
-        this.attr("data-snackbar-id", a.attr("id"));
-        return a
-    }
-})(jQuery);
+
+    };
+}));
