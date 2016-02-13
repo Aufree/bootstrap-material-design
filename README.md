@@ -40,6 +40,13 @@ application.css:
  */
 ```
 
+If you use scss,
+application.scss:
+
+```scss
+@import "bootstrap-material-design"
+```
+
 Then restart your webserver if it was previously running.
 
 That's it, hava fun!
